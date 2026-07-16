@@ -59,6 +59,10 @@
         <div>
             <h1 class="text-2xl font-bold text-warm-800 tracking-tight">MCN PERFORMANCE OVERVIEW</h1>
             <p class="text-sm text-slate-500 font-medium" id="subtitleDate">Periode: -</p>
+            <p class="text-[11px] font-semibold mt-1 flex items-center gap-1.5" id="dataLoadStatus">
+                <span id="dataLoadDot" class="w-1.5 h-1.5 rounded-full bg-warm-300 inline-block animate-pulse"></span>
+                <span id="dataLoadLabel" class="text-warm-400">Memuat data...</span>
+            </p>
         </div>
         <div class="flex items-center gap-3">
             <span class="px-3 py-1 bg-warm-100 text-warm-700 text-xs font-semibold rounded-full border border-warm-200">
@@ -155,7 +159,7 @@
             </div>
 
             <!-- Filter CMS (Multi-Select) -->
-            <div>
+            <div>   /ust
                 <div class="flex justify-between items-center mb-2.5">
                     <h2 class="text-xs font-bold text-warm-500 uppercase tracking-widest">CMS (Pilihan)</h2>
                     <button id="reset-cms" class="text-[10px] font-bold text-warm-terracotta hover:underline">Semua</button>
@@ -187,7 +191,7 @@
                     </label>
                     <label class="flex items-center gap-2 p-1 hover:bg-white rounded cursor-pointer">
                         <input type="checkbox" checked class="cms-checkbox rounded text-warm-terracotta focus:ring-warm-terracotta" value="Starhits">
-                        <span class="text-[11px] text-warm-800 leading-tight">Starhits</span>
+                        <span class="text-[11px] text-warm-800 leading                     -tight">Starhits</span>
                     </label>
                     <label class="flex items-center gap-2 p-1 hover:bg-white rounded cursor-pointer">
                         <input type="checkbox" checked class="cms-checkbox rounded text-warm-terracotta focus:ring-warm-terracotta" value="Starhits MCN">
@@ -328,10 +332,13 @@
         </main>
     </div>
 
+    <!-- Konfigurasi URL Google Sheet (lihat config.js / config.example.js + README.md) -->
+    <script src="config.js"></script>
+
     <!-- Data & Interactive Logic -->
     <script>
-        // MASTER DATASET - Ditranslasikan presisi dari screenshot PivotTable Anda
-        const rawMonthlyData = [
+        // FALLBACK DATASET - dipakai hanya jika Google Sheet gagal dimuat. Sama persis dengan data lama.
+        const fallbackMonthlyData = [
             // Tahun 2025
             { year: 2025, qtr: "Q1", month: "Jan", views: 3864714850, uploads: 43122, revenue_3fta: 4004229000, revenue_img: 183220025, revenue_starhits: 500142886, target_3fta: 3927341604, target_img: 1010926666, target_starhits: 800910000, cms_mnctv: 215112110, cms_gtv: 200445667, cms_inews: 928410212, cms_scm: 112140131, cms_sma: 1104111345, cms_rcti: 1400222123, cms_sh: 213234123, cms_shmcn: 513916200 },
             { year: 2025, qtr: "Q1", month: "Feb", views: 2921275549, uploads: 40217, revenue_3fta: 3700145000, revenue_img: 175310000, revenue_starhits: 508930735, target_3fta: 3927341604, target_img: 1010926666, target_starhits: 800910000, cms_mnctv: 180112110, cms_gtv: 185112123, cms_inews: 810140222, cms_scm: 120412123, cms_sma: 1004141123, cms_rcti: 1380123112, cms_sh: 204345122, cms_shmcn: 500000000 },
@@ -354,6 +361,9 @@
             { year: 2026, qtr: "Q2", month: "May", views: 2382515423, uploads: 38994, revenue_3fta: 8400231123, revenue_img: 44122345, revenue_starhits: 1691074186, target_3fta: 7189700000, target_img: 0, target_starhits: 692884000, cms_mnctv: 330123110, cms_gtv: 325412110, cms_inews: 1610412331, cms_scm: 185221120, cms_sma: 2250123110, cms_rcti: 3100123121, cms_sh: 540231412, cms_shmcn: 1794178121 },
             { year: 2026, qtr: "Q2", month: "Jun", views: 2539817593, uploads: 58127, revenue_3fta: 8296294856, revenue_img: 45056330, revenue_starhits: 1693321849, target_3fta: 7189700000, target_img: 0, target_starhits: 692884000, cms_mnctv: 327431102, cms_gtv: 320145212, cms_inews: 1590456123, cms_scm: 182412112, cms_sma: 2210451212, cms_rcti: 3061456123, cms_sh: 535213122, cms_shmcn: 1767117180 }
         ];
+
+        // DATASET AKTIF - diisi oleh loadGoogleSheetData(); di-seed dengan fallback dulu supaya tidak sempat kosong/nol.
+        let rawMonthlyData = fallbackMonthlyData;
 
         // State Filters
         let activeYear = "all"; 
@@ -1129,11 +1139,193 @@
             });
         }
 
-        // Render Dashboard Awal Saat Page Loaded
-        window.onload = function() {
-            initFiltersUI();
-            updateDashboard();
-        };
+        // === INTEGRASI GOOGLE SHEET (CSV) ===
+
+        const REQUIRED_COLUMNS = ["year", "qtr", "month", "views", "uploads",
+            "revenue_3fta", "revenue_img", "revenue_starhits",
+            "target_3fta", "target_img", "target_starhits",
+            "cms_mnctv", "cms_gtv", "cms_inews", "cms_scm", "cms_sma", "cms_rcti", "cms_sh", "cms_shmcn"];
+        const NUMERIC_COLUMNS = REQUIRED_COLUMNS.filter(c => c !== "year" && c !== "qtr" && c !== "month");
+        const VALID_QTRS = ["Q1", "Q2", "Q3", "Q4"];
+        const VALID_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        // Tokenizer 1 baris CSV yang sadar tanda kutip (menangani field ber-koma yang di-quote,
+        // misal angka yang diekspor Sheet sebagai "4,004,229,000").
+        function parseCsvLine(line) {
+            const fields = [];
+            let current = "";
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (inQuotes) {
+                    if (char === '"') {
+                        if (line[i + 1] === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        current += char;
+                    }
+                } else if (char === '"') {
+                    inQuotes = true;
+                } else if (char === ',') {
+                    fields.push(current);
+                    current = "";
+                } else {
+                    current += char;
+                }
+            }
+            fields.push(current);
+            return fields;
+        }
+
+        // Parse teks CSV mentah menjadi matrix baris x kolom. Baris kosong (semua sel kosong) dibuang.
+        function parseCSV(text) {
+            const cleanText = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+            return cleanText
+                .split(/\r\n|\r|\n/)
+                .map(line => parseCsvLine(line))
+                .filter(fields => fields.some(f => f.trim() !== ""));
+        }
+
+        // Validasi header wajib ada (berdasarkan nama, bukan urutan) & bangun peta nama -> index kolom.
+        function validateAndMapHeader(headerRow) {
+            const headerMap = {};
+            headerRow.forEach((name, idx) => {
+                headerMap[name.trim()] = idx;
+            });
+            const missing = REQUIRED_COLUMNS.filter(col => !(col in headerMap));
+            if (missing.length > 0) {
+                throw new Error("Header CSV tidak lengkap, kolom hilang: " + missing.join(", "));
+            }
+            return headerMap;
+        }
+
+        // Ubah 1 nilai sel menjadi Number. Buang spasi & karakter format (mis. "Rp", pemisah ribuan ",").
+        // Kosong/tidak valid -> 0 (dicatat sebagai warning, tidak menggagalkan baris).
+        function coerceNumericField(rawValue, fieldName, rowLabel, warnings) {
+            const trimmed = (rawValue || "").trim();
+            if (trimmed === "") {
+                warnings.push(`${rowLabel}: kolom "${fieldName}" kosong, dianggap 0.`);
+                return 0;
+            }
+            const cleaned = trimmed.replace(/[^0-9.\-]/g, "");
+            const num = Number(cleaned);
+            if (cleaned === "" || Number.isNaN(num)) {
+                warnings.push(`${rowLabel}: kolom "${fieldName}" bernilai "${rawValue}" tidak valid, dianggap 0.`);
+                return 0;
+            }
+            return num;
+        }
+
+        // Validasi + mapping 1 baris CSV menjadi object rawMonthlyData. Baris dengan year/qtr/month
+        // tidak valid dilewati (return null) + dicatat warning, tanpa menggagalkan seluruh load.
+        function parseSheetRow(fields, headerMap, rowLabel, warnings) {
+            const get = (col) => (fields[headerMap[col]] || "").trim();
+
+            const yearRaw = get("year");
+            const qtr = get("qtr");
+            const month = get("month");
+
+            const year = parseInt(yearRaw, 10);
+            if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+                warnings.push(`${rowLabel}: kolom "year" bernilai "${yearRaw}" tidak valid, baris dilewati.`);
+                return null;
+            }
+            if (!VALID_QTRS.includes(qtr)) {
+                warnings.push(`${rowLabel}: kolom "qtr" bernilai "${qtr}" tidak valid (harus Q1-Q4), baris dilewati.`);
+                return null;
+            }
+            if (!VALID_MONTHS.includes(month)) {
+                warnings.push(`${rowLabel}: kolom "month" bernilai "${month}" tidak valid (harus Jan-Dec), baris dilewati.`);
+                return null;
+            }
+
+            const record = { year, qtr, month };
+            NUMERIC_COLUMNS.forEach(col => {
+                record[col] = coerceNumericField(fields[headerMap[col]], col, rowLabel, warnings);
+            });
+            return record;
+        }
+
+        // Update elemen status kecil di header (loading / sukses / gagal).
+        function setDataLoadStatus(state, detail) {
+            const dot = document.getElementById("dataLoadDot");
+            const label = document.getElementById("dataLoadLabel");
+            if (!dot || !label) return;
+
+            dot.className = "w-1.5 h-1.5 rounded-full inline-block";
+            if (state === "loading") {
+                dot.classList.add("bg-warm-300", "animate-pulse");
+                label.className = "text-warm-400";
+                label.textContent = "Memuat data...";
+            } else if (state === "success") {
+                dot.classList.add("bg-emerald-500");
+                label.className = "text-emerald-600";
+                const timeStr = detail.time.toLocaleTimeString('id-ID');
+                const warningStr = detail.warnings > 0 ? ` • ${detail.warnings} baris dilewati` : "";
+                label.textContent = `Data berhasil dimuat • ${detail.rows} baris • ${timeStr}${warningStr}`;
+            } else {
+                dot.classList.add("bg-rose-500");
+                label.className = "text-rose-600";
+                label.textContent = `Gagal memuat Google Sheet, menampilkan data cadangan lokal (${detail.message})`;
+            }
+        }
+
+        // Orkestrator utama: fetch -> parse -> validasi -> assign ke rawMonthlyData -> render ulang dashboard.
+        // Sukses maupun gagal, selalu diakhiri dengan initFiltersUI() + updateDashboard() supaya dashboard
+        // tidak pernah tampil blank.
+        async function loadGoogleSheetData() {
+            setDataLoadStatus("loading");
+            try {
+                if (typeof GOOGLE_SHEET_CSV_URL === "undefined" || !GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL.includes("MASUKKAN_URL")) {
+                    throw new Error("URL Google Sheet belum dikonfigurasi (buat config.js dari config.example.js)");
+                }
+
+                const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
+                }
+
+                const csvText = await response.text();
+                const rows = parseCSV(csvText);
+                if (rows.length === 0) {
+                    throw new Error("CSV kosong");
+                }
+
+                const headerMap = validateAndMapHeader(rows[0]);
+                const warnings = [];
+                const parsedData = [];
+                rows.slice(1).forEach((fields, i) => {
+                    const record = parseSheetRow(fields, headerMap, `Baris sheet ~${i + 2}`, warnings);
+                    if (record) parsedData.push(record);
+                });
+
+                if (parsedData.length === 0) {
+                    throw new Error("Tidak ada baris data valid pada CSV");
+                }
+
+                rawMonthlyData = parsedData;
+                if (warnings.length > 0) {
+                    console.warn("Peringatan saat memuat data Google Sheet:\n" + warnings.join("\n"));
+                }
+
+                initFiltersUI();
+                updateDashboard();
+                setDataLoadStatus("success", { time: new Date(), rows: parsedData.length, warnings: warnings.length });
+            } catch (err) {
+                console.error("Gagal memuat Google Sheet, fallback ke data lokal:", err);
+                rawMonthlyData = fallbackMonthlyData;
+                initFiltersUI();
+                updateDashboard();
+                setDataLoadStatus("error", { message: err.message });
+            }
+        }
+
+        // Render Dashboard Awal Saat Page Loaded - fetch Google Sheet dulu, baru render (lihat loadGoogleSheetData)
+        window.onload = loadGoogleSheetData;
     </script>
 </body>
 </html>
