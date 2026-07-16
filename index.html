@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance & Financial Dashboard (2025 - 2026)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FDFBF7; /* Warm light ivory */
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F3EFE9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D9C8B5;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C4B19C;
+        }
+        .active-filter {
+            background-color: #D36B46 !important; /* Warm Terracotta */
+            color: white !important;
+            border-color: #D36B46 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-[#F8F4EC] border-b border-[#EAE2D5] px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-[#D36B46] text-white p-2.5 rounded-xl shadow-md shadow-orange-700/10">
+                <i class="fa-solid fa-chart-line text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight text-[#4A3E3D]">MCN PERFORMANCE DASHBOARD</h1>
+                <p class="text-xs text-slate-500 font-medium">MCN Analisis Kinerja • 2025 - 2026</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <div class="text-right hidden md:block">
+                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Status Pembaruan</p>
+                <p class="text-xs text-[#9E8166] font-bold">Data Terkonsolidasi (Juni 2026 YTD)</p>
+            </div>
+            <button onclick="resetAllFilters()" class="flex items-center space-x-2 bg-white hover:bg-[#F3EFE9] border border-[#D9C8B5] px-4 py-2 rounded-xl text-xs font-bold text-[#8C6D53] transition-all shadow-sm">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Reset Filter</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace (Landscape Split) -->
+    <main class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR FILTER / NAVIGATION PANE (Sisi Kiri) -->
+        <aside class="w-80 bg-white border-r border-[#EAE2D5] flex flex-col flex-shrink-0">
+            <!-- Sidebar Header / Reset Info -->
+            <div class="p-5 border-b border-[#F3EFE9] bg-[#FAF8F5]">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-[#9E8166]">Panel Navigasi</span>
+                    <span class="bg-[#ECE2D0] text-[#6E5743] text-[10px] px-2 py-0.5 rounded-full font-bold">Dinamis</span>
+                </div>
+                <p class="text-xs text-slate-500">Gunakan filter di bawah untuk melakukan analisis mendalam secara real-time.</p>
+            </div>
+
+            <!-- Scrollable Filter Group Container -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                
+                <!-- Filter: Year -->
+                <div>
+                    <label class="block text-xs font-bold text-[#6E5743] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                        <span>Tahun</span>
+                        <i class="fa-regular fa-calendar text-[#BFA085]"></i>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btn-year-all" onclick="setFilter('year', 'all')" class="filter-btn active-filter border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Semua</button>
+                        <button id="btn-year-2025" onclick="setFilter('year', 2025)" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">2025</button>
+                        <button id="btn-year-2026" onclick="setFilter('year', 2026)" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] col-span-2">2026</button>
+                    </div>
+                </div>
+
+                <!-- Filter: Quarter -->
+                <div>
+                    <label class="block text-xs font-bold text-[#6E5743] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                        <span>Kuartal</span>
+                        <i class="fa-solid fa-chart-pie text-[#BFA085]"></i>
+                    </label>
+                    <div class="grid grid-cols-5 gap-1.5">
+                        <button id="btn-q-all" onclick="setFilter('quarter', 'all')" class="filter-btn active-filter border border-[#EAE2D5] bg-white py-2 px-1 rounded-lg text-[11px] font-bold text-slate-600 transition-all hover:bg-[#FAF8F5]">ALL</button>
+                        <button id="btn-q-Q1" onclick="setFilter('quarter', 'Q1')" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-1 rounded-lg text-[11px] font-bold text-slate-600 transition-all hover:bg-[#FAF8F5]">Q1</button>
+                        <button id="btn-q-Q2" onclick="setFilter('quarter', 'Q2')" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-1 rounded-lg text-[11px] font-bold text-slate-600 transition-all hover:bg-[#FAF8F5]">Q2</button>
+                        <button id="btn-q-Q3" onclick="setFilter('quarter', 'Q3')" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-1 rounded-lg text-[11px] font-bold text-slate-600 transition-all hover:bg-[#FAF8F5]">Q3</button>
+                        <button id="btn-q-Q4" onclick="setFilter('quarter', 'Q4')" class="filter-btn border border-[#EAE2D5] bg-white py-2 px-1 rounded-lg text-[11px] font-bold text-slate-600 transition-all hover:bg-[#FAF8F5]">Q4</button>
+                    </div>
+                </div>
+
+                <!-- Filter: Month -->
+                <div>
+                    <label class="block text-xs font-bold text-[#6E5743] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                        <span>Bulan</span>
+                        <i class="fa-regular fa-clock text-[#BFA085]"></i>
+                    </label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button id="btn-m-all" onclick="setFilter('month', 'all')" class="filter-btn active-filter border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] col-span-3">Semua Bulan</button>
+                        <button id="btn-m-Jan" onclick="setFilter('month', 'Jan')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Jan</button>
+                        <button id="btn-m-Feb" onclick="setFilter('month', 'Feb')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Feb</button>
+                        <button id="btn-m-Mar" onclick="setFilter('month', 'Mar')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Mar</button>
+                        <button id="btn-m-Apr" onclick="setFilter('month', 'Apr')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Apr</button>
+                        <button id="btn-m-May" onclick="setFilter('month', 'May')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Mei</button>
+                        <button id="btn-m-Jun" onclick="setFilter('month', 'Jun')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Jun</button>
+                        <button id="btn-m-Jul" onclick="setFilter('month', 'Jul')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Jul</button>
+                        <button id="btn-m-Aug" onclick="setFilter('month', 'Aug')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Ags</button>
+                        <button id="btn-m-Sep" onclick="setFilter('month', 'Sep')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Sep</button>
+                        <button id="btn-m-Oct" onclick="setFilter('month', 'Oct')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Okt</button>
+                        <button id="btn-m-Nov" onclick="setFilter('month', 'Nov')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Nov</button>
+                        <button id="btn-m-Dec" onclick="setFilter('month', 'Dec')" class="filter-btn border border-[#EAE2D5] bg-white py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] m-inactive">Des</button>
+                    </div>
+                </div>
+
+                <!-- Filter: Group Channel -->
+                <div>
+                    <label class="block text-xs font-bold text-[#6E5743] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                        <span>Group Channel</span>
+                        <i class="fa-solid fa-tv text-[#BFA085]"></i>
+                    </label>
+                    <div class="space-y-1.5">
+                        <button id="btn-group-all" onclick="setFilter('group', 'all')" class="filter-btn active-filter w-full text-left border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] flex items-center justify-between">
+                            <span>Semua Grup</span>
+                            <span class="text-[10px] bg-[#ECE2D0] text-[#6E5743] px-1.5 py-0.5 rounded">3</span>
+                        </button>
+                        <button id="btn-group-3 FTA" onclick="setFilter('group', '3 FTA')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] flex items-center justify-between">
+                            <span>3 FTA (RCTI, MNCTV, GTV)</span>
+                            <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">FTA</span>
+                        </button>
+                        <button id="btn-group-IMG Group" onclick="setFilter('group', 'IMG Group')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] flex items-center justify-between">
+                            <span>IMG Group</span>
+                            <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">IMG</span>
+                        </button>
+                        <button id="btn-group-Starhits" onclick="setFilter('group', 'Starhits')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] flex items-center justify-between">
+                            <span>Starhits Digital</span>
+                            <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">STH</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter: CMS Breakdown -->
+                <div>
+                    <label class="block text-xs font-bold text-[#6E5743] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                        <span>CMS Entities</span>
+                        <i class="fa-solid fa-circle-nodes text-[#BFA085]"></i>
+                    </label>
+                    <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <button id="btn-cms-all" onclick="setFilter('cms', 'all')" class="filter-btn active-filter w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5]">Semua CMS</button>
+                        <button id="btn-cms-RCTI" onclick="setFilter('cms', 'RCTI Indonesia')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">RCTI Indonesia</button>
+                        <button id="btn-cms-StarHits" onclick="setFilter('cms', 'StarHits')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">StarHits</button>
+                        <button id="btn-cms-StarHitsMCN" onclick="setFilter('cms', 'StarHits MCN')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">StarHits MCN</button>
+                        <button id="btn-cms-SuaraMas" onclick="setFilter('cms', 'PT Suara Mas Abadi')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">PT Suara Mas Abadi</button>
+                        <button id="btn-cms-MNCTV" onclick="setFilter('cms', 'PT Cipta Televisi Pendidikan Indonesia')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">PT Cipta TV Pend. Indo</button>
+                        <button id="btn-cms-GTV" onclick="setFilter('cms', 'PT Global Informasi Bermutu')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">PT Global Informasi Bermutu</button>
+                        <button id="btn-cms-iNews" onclick="setFilter('cms', 'PT MNC Televisi Network')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">PT MNC Televisi Network</button>
+                        <button id="btn-cms-StarCipta" onclick="setFilter('cms', 'PT Star Cipta Musikindo')" class="filter-btn w-full text-left border border-[#EAE2D5] bg-white py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 transition-all hover:bg-[#FAF8F5] truncate">PT Star Cipta Musikindo</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-[#F3EFE9] text-center text-[10px] text-slate-400 font-semibold bg-[#FAF8F5]">
+                DASHBOARD INTERAKTIF V1.0 • HTML5/JS
+            </div>
+        </aside>
+
+        <!-- DASHBOARD CONTAINER (Sisi Kanan) -->
+        <div class="flex-1 overflow-y-auto bg-[#FDFBF7] p-6 space-y-6">
+            
+            <!-- SECTION 1: KPI CARDS (BAGIAN ATAS) -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                
+                <!-- KPI 1: Total Revenue -->
+                <div class="bg-white border border-[#EAE2D5] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 bg-[#FDF7F4] text-[#D36B46] w-16 h-16 rounded-bl-full flex items-center justify-center pl-4 pb-4 transition-transform group-hover:scale-110 duration-300">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-[#9E8166] uppercase tracking-wider mb-2">Total Estimated Revenue</p>
+                    <h3 id="kpi-revenue" class="text-2xl font-extrabold text-[#4A3E3D] tracking-tight transition-all">Rp 0</h3>
+                    <div class="mt-2.5 flex items-center space-x-1">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center">
+                            <i class="fa-solid fa-arrow-up mr-1"></i> 100% Target
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-medium">Pendapatan Terhitung</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Total Engaged Views -->
+                <div class="bg-white border border-[#EAE2D5] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 bg-[#F4F7FD] text-indigo-500 w-16 h-16 rounded-bl-full flex items-center justify-center pl-4 pb-4 transition-transform group-hover:scale-110 duration-300">
+                        <i class="fa-solid fa-eye text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-[#9E8166] uppercase tracking-wider mb-2">Total Engaged Views</p>
+                    <h3 id="kpi-views" class="text-2xl font-extrabold text-[#4A3E3D] tracking-tight">0</h3>
+                    <div class="mt-2.5 flex items-center space-x-1">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FAF3EC] text-[#9E8166] font-bold flex items-center">
+                            <i class="fa-solid fa-chart-line mr-1"></i> Penonton Aktif
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-medium">Kali Penayangan</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Total Videos Published -->
+                <div class="bg-white border border-[#EAE2D5] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 bg-[#FAFBF3] text-amber-500 w-16 h-16 rounded-bl-full flex items-center justify-center pl-4 pb-4 transition-transform group-hover:scale-110 duration-300">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-[#9E8166] uppercase tracking-wider mb-2">Total Video Uploaded</p>
+                    <h3 id="kpi-videos" class="text-2xl font-extrabold text-[#4A3E3D] tracking-tight">0</h3>
+                    <div class="mt-2.5 flex items-center space-x-1">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold flex items-center">
+                            <i class="fa-solid fa-clapperboard mr-1"></i> Konten Unik
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-medium">Video Dipublikasikan</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Overall Achievement % -->
+                <div class="bg-white border border-[#EAE2D5] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 bg-[#FAF6F4] text-[#D36B46] w-16 h-16 rounded-bl-full flex items-center justify-center pl-4 pb-4 transition-transform group-hover:scale-110 duration-300">
+                        <i class="fa-solid fa-bullseye text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-[#9E8166] uppercase tracking-wider mb-2">Overall Achievement %</p>
+                    <h3 id="kpi-achievement" class="text-2xl font-extrabold text-[#4A3E3D] tracking-tight">0%</h3>
+                    <div class="mt-2.5 flex items-center space-x-1">
+                        <span id="achievement-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center">
+                            <i class="fa-solid fa-percent mr-1"></i> Kontra Target
+                        </span>
+                        <span class="text-[11px] text-slate-400 font-medium">Terhadap Total Target</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: GRAPHICS GRID (BAGIAN TENGAH & BAWAH) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Chart 1: Tren Bulanan Revenue vs Views (Dual-Axis Combo) -->
+                <div class="lg:col-span-8 bg-white border border-[#EAE2D5] rounded-2xl p-6 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-extrabold text-[#4A3E3D] uppercase tracking-wider">Tren Bulanan Revenue vs Views</h4>
+                            <p class="text-xs text-slate-400 font-medium">Membandingkan estimasi pendapatan dengan engagement views</p>
+                        </div>
+                        <div class="flex items-center space-x-3 text-xs">
+                            <span class="flex items-center"><span class="w-3 h-1.5 bg-[#D36B46] rounded-full mr-1"></span> Est. Revenue</span>
+                            <span class="flex items-center"><span class="w-3 h-1.5 bg-[#5D709B] rounded-full mr-1"></span> Engaged Views</span>
+                        </div>
+                    </div>
+                    <div class="relative flex-1" style="height: 310px;">
+                        <canvas id="chartCombo"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Porsi Pendapatan Group Channel (Donut Chart) -->
+                <div class="lg:col-span-4 bg-white border border-[#EAE2D5] rounded-2xl p-6 shadow-sm flex flex-col">
+                    <div class="mb-4">
+                        <h4 class="text-sm font-extrabold text-[#4A3E3D] uppercase tracking-wider">Porsi Pendapatan Grup</h4>
+                        <p class="text-xs text-slate-400 font-medium">Persentase kontribusi Revenue per Group Channel</p>
+                    </div>
+                    <div class="relative flex-1 flex items-center justify-center" style="height: 200px;">
+                        <canvas id="chartDonut"></canvas>
+                    </div>
+                    <!-- Custom Legends with detailed data -->
+                    <div id="donut-legends" class="mt-4 grid grid-cols-3 gap-2 border-t border-[#F3EFE9] pt-4 text-center">
+                        <!-- Will be dynamically filled -->
+                    </div>
+                </div>
+
+                <!-- Chart 2: Target vs Aktual per Group Channel (Clustered Column) -->
+                <div class="lg:col-span-6 bg-white border border-[#EAE2D5] rounded-2xl p-6 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-extrabold text-[#4A3E3D] uppercase tracking-wider">Target vs Aktual Pendapatan</h4>
+                            <p class="text-xs text-slate-400 font-medium">Perbandingan Target Revenue dan Realisasi per Group Channel</p>
+                        </div>
+                        <i class="fa-solid fa-chart-column text-slate-300"></i>
+                    </div>
+                    <div class="relative flex-1" style="height: 250px;">
+                        <canvas id="chartBarVertical"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 4: Kontribusi CMS Terbesar (Horizontal Bar Chart) -->
+                <div class="lg:col-span-6 bg-white border border-[#EAE2D5] rounded-2xl p-6 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-extrabold text-[#4A3E3D] uppercase tracking-wider">Kinerja Kontribusi CMS</h4>
+                            <p class="text-xs text-slate-400 font-medium">Peringkat kontribusi pendapatan terbesar berdasarkan CMS yang dikelola</p>
+                        </div>
+                        <i class="fa-solid fa-trophy text-[#D36B46]"></i>
+                    </div>
+                    <div class="relative flex-1" style="height: 250px;">
+                        <canvas id="chartBarHorizontal"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 3: DATATABLE BREAKDOWN FOR ACCURACY -->
+            <div class="bg-white border border-[#EAE2D5] rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-[#4A3E3D] uppercase tracking-wider">Tabel Rincian Pencapaian & Upload</h4>
+                        <p class="text-xs text-slate-400 font-medium">Data tabular detail berdasarkan kriteria filter aktif saat ini</p>
+                    </div>
+                    <span class="mt-2 sm:mt-0 bg-[#FBF7F2] text-[#8C6D53] border border-[#D9C8B5] text-[10px] px-3 py-1 rounded-full font-bold">
+                        Ditemukan <span id="record-count">0</span> Data Bulanan
+                    </span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-[#EAE2D5] text-[#9E8166] uppercase font-bold tracking-wider bg-[#FDFBF7]">
+                                <th class="py-3 px-4">Tahun / Periode</th>
+                                <th class="py-3 px-4">Group Channel</th>
+                                <th class="py-3 px-4">CMS Utama</th>
+                                <th class="py-3 px-4 text-right">Target Revenue</th>
+                                <th class="py-3 px-4 text-right">Est. Revenue (Aktual)</th>
+                                <th class="py-3 px-4 text-center">Pencapaian (%)</th>
+                                <th class="py-3 px-4 text-right">Engaged Views</th>
+                                <th class="py-3 px-4 text-right">Video Diupload</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-[#F3EFE9]">
+                            <!-- Dynamic Row Population -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Detailed Dataset and Application Controller Logic -->
+    <script>
+        // Raw Data Reconstruction from the uploaded 6 Pivot Tables images
+        // Consolidating all months, groups, and CMS configurations for 2025 & 2026.
+        const RAW_DATA = [
+            // ================= 2025 DATA =================
+            // --- 3 FTA Group (RCTI Indonesia, StarHits MCN, PT Cipta Televisi, PT Global Informasi, PT MNC Televisi) ---
+            { year: 2025, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "RCTI Indonesia", target: 400000000, revenue: 849210000, views: 245000000, videos: 3100 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 777203955, views: 205000000, videos: 2900 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 598821235, views: 180000000, videos: 2500 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT MNC Televisi Network", target: 300000000, revenue: 577908401, views: 150000000, videos: 2200 },
+            
+            { year: 2025, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "RCTI Indonesia", target: 500000000, revenue: 2363070000, views: 680000000, videos: 8500 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 600000000, revenue: 1251394838, views: 320000000, videos: 4600 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 500000000, revenue: 951046846, views: 250000000, videos: 3800 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT MNC Televisi Network", target: 400000000, revenue: 647573155, views: 190000000, videos: 3100 },
+            
+            { year: 2025, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "RCTI Indonesia", target: 500000000, revenue: 2363070000, views: 640000000, videos: 8200 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 600000000, revenue: 1151279895, views: 300000000, videos: 4500 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 500000000, revenue: 182709908, views: 100000000, videos: 2000 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT MNC Televisi Network", target: 400000000, revenue: 617322310, views: 180000000, videos: 3000 },
+            
+            { year: 2025, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 1246104000, views: 380000000, videos: 4500 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 944234618, views: 280000000, videos: 3900 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 214884712, views: 100000000, videos: 2000 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 519756052, views: 150000000, videos: 2800 },
+            
+            { year: 2025, quarter: "Q2", month: "May", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 1246104000, views: 370000000, videos: 4400 },
+            { year: 2025, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 900570344, views: 270000000, videos: 3800 },
+            { year: 2025, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 195328322, views: 90000000, videos: 1900 },
+            { year: 2025, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 518884017, views: 140000000, videos: 2700 },
+
+            { year: 2025, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "RCTI Indonesia", target: 400000000, revenue: 849210000, views: 230000000, videos: 3000 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 844812828, views: 250000000, videos: 3500 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 182709908, views: 80000000, videos: 1800 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT MNC Televisi Network", target: 300000000, revenue: 418146752, views: 120000000, videos: 2100 },
+
+            { year: 2025, quarter: "Q3", month: "Jul", group: "3 FTA", cms: "RCTI Indonesia", target: 400000000, revenue: 594398555, views: 180000000, videos: 2500 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 818241518, views: 240000000, videos: 3200 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 68830825, views: 50000000, videos: 1200 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "3 FTA", cms: "PT MNC Televisi Network", target: 300000000, revenue: 750535870, views: 110000000, videos: 2000 },
+
+            { year: 2025, quarter: "Q3", month: "Aug", group: "3 FTA", cms: "RCTI Indonesia", target: 400000000, revenue: 594398555, views: 190000000, videos: 2600 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 993592223, views: 290000000, videos: 4100 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 73015310, views: 60000000, videos: 1300 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "3 FTA", cms: "PT MNC Televisi Network", target: 300000000, revenue: 940386421, views: 130000000, videos: 2400 },
+
+            { year: 2025, quarter: "Q3", month: "Sep", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 867197208, views: 260000000, videos: 3200 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 1035593319, views: 300000000, videos: 4400 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 141973976, views: 90000000, videos: 1900 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 1081113558, views: 160000000, videos: 2900 },
+
+            { year: 2025, quarter: "Q4", month: "Oct", group: "3 FTA", cms: "RCTI Indonesia", target: 500000000, revenue: 867197208, views: 250000000, videos: 3100 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 600000000, revenue: 1411293399, views: 390000000, videos: 5200 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 500000000, revenue: 219904323, views: 120000000, videos: 2300 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "3 FTA", cms: "PT MNC Televisi Network", target: 400000000, revenue: 1405384400, views: 210000000, videos: 3400 },
+
+            { year: 2025, quarter: "Q4", month: "Nov", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 2483710512, views: 720000000, videos: 9000 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 1200846931, views: 330000000, videos: 4600 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 450000000, revenue: 104448595, views: 80000000, videos: 1600 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 987565241, views: 150000000, videos: 2700 },
+
+            { year: 2025, quarter: "Q4", month: "Dec", group: "3 FTA", cms: "RCTI Indonesia", target: 400000000, revenue: 2483710512, views: 710000000, videos: 8900 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 815356553, views: 230000000, videos: 3300 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 105540325, views: 80000000, videos: 1700 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "3 FTA", cms: "PT MNC Televisi Network", target: 300000000, revenue: 1021221365, views: 160000000, videos: 2900 },
+
+            // --- IMG Group (PT Suara Mas Abadi, PT Star Cipta Musikindo, StarHits) ---
+            { year: 2025, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 19131093120, views: 1200000000, videos: 15000 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 1201507854, views: 80000000, videos: 1200 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "StarHits", target: 500000000, revenue: 1404690000, views: 420000000, videos: 4300 },
+            
+            { year: 2025, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 19131093120, views: 1100000000, videos: 14500 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 1113066914, views: 75000000, videos: 1100 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "StarHits", target: 500000000, revenue: 1344890000, views: 400000000, videos: 4100 },
+
+            { year: 2025, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 19131093120, views: 1300000000, videos: 16000 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 1137004630, views: 78000000, videos: 1150 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "StarHits", target: 500000000, revenue: 1344890000, views: 410000000, videos: 4200 },
+
+            { year: 2025, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 11311556451, views: 800000000, videos: 11000 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 8000000, revenue: 996370944, views: 60000000, videos: 900 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "StarHits", target: 400000000, revenue: 1205250100, views: 350000000, videos: 3600 },
+
+            { year: 2025, quarter: "Q2", month: "May", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 11311556451, views: 790000000, videos: 10500 },
+            { year: 2025, quarter: "Q2", month: "May", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 8000000, revenue: 960370944, views: 58000000, videos: 850 },
+            { year: 2025, quarter: "Q2", month: "May", group: "IMG Group", cms: "StarHits", target: 400000000, revenue: 1205250100, views: 340000000, videos: 3500 },
+
+            { year: 2025, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 11311556451, views: 820000000, videos: 11200 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 8000000, revenue: 745170277, views: 50000000, videos: 700 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "StarHits", target: 400000000, revenue: 1205250100, views: 360000000, videos: 3700 },
+
+            { year: 2025, quarter: "Q3", month: "Jul", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 20251121511, views: 1400000000, videos: 17000 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 745170277, views: 48000000, videos: 680 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "IMG Group", cms: "StarHits", target: 350000000, revenue: 941421453, views: 280000000, videos: 3100 },
+
+            { year: 2025, quarter: "Q3", month: "Aug", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 20251121511, views: 1350000000, videos: 16500 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 745170277, views: 45000000, videos: 650 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "IMG Group", cms: "StarHits", target: 350000000, revenue: 941421453, views: 270000000, videos: 3000 },
+
+            { year: 2025, quarter: "Q3", month: "Sep", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 20251121511, views: 1450000000, videos: 17500 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 818020830, views: 52000000, videos: 750 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "IMG Group", cms: "StarHits", target: 350000000, revenue: 941421453, views: 290000000, videos: 3200 },
+
+            { year: 2025, quarter: "Q4", month: "Oct", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 17291121511, views: 1100000000, videos: 14000 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 890820830, views: 56000000, videos: 820 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "IMG Group", cms: "StarHits", target: 500000000, revenue: 1411570453, views: 400000000, videos: 4400 },
+
+            { year: 2025, quarter: "Q4", month: "Nov", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 17291121511, views: 1050000000, videos: 13500 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 761787283, views: 49000000, videos: 710 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "IMG Group", cms: "StarHits", target: 500000000, revenue: 1411570453, views: 390000000, videos: 4300 },
+
+            { year: 2025, quarter: "Q4", month: "Dec", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 150000000, revenue: 17291121511, views: 1150000000, videos: 14200 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 791787283, views: 51000000, videos: 740 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 1411570453, views: 410000000, videos: 4500 },
+
+            // --- Starhits Group (StarHits MCN, StarHits) ---
+            { year: 2025, quarter: "Q1", month: "Jan", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4927887016, views: 150000000, videos: 20000 },
+            { year: 2025, quarter: "Q1", month: "Jan", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 130000000, views: 30000000, videos: 1200 },
+            
+            { year: 2025, quarter: "Q1", month: "Feb", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4887093892, views: 145000000, videos: 19500 },
+            { year: 2025, quarter: "Q1", month: "Feb", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 125000000, views: 28000000, videos: 1100 },
+
+            { year: 2025, quarter: "Q1", month: "Mar", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4617322310, views: 138000000, videos: 18500 },
+            { year: 2025, quarter: "Q1", month: "Mar", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 140000000, views: 32000000, videos: 1300 },
+
+            { year: 2025, quarter: "Q2", month: "Apr", group: "Starhits", cms: "StarHits MCN", target: 9000000000, revenue: 3788017354, views: 120000000, videos: 15500 },
+            { year: 2025, quarter: "Q2", month: "Apr", group: "Starhits", cms: "StarHits", target: 400000000, revenue: 115000000, views: 25000000, videos: 1000 },
+
+            { year: 2025, quarter: "Q2", month: "May", group: "Starhits", cms: "StarHits MCN", target: 9000000000, revenue: 3777262310, views: 118000000, videos: 15000 },
+            { year: 2025, quarter: "Q2", month: "May", group: "Starhits", cms: "StarHits", target: 400000000, revenue: 112000000, views: 24000000, videos: 950 },
+
+            { year: 2025, quarter: "Q2", month: "Jun", group: "Starhits", cms: "StarHits MCN", target: 9000000000, revenue: 4216834516, views: 130000000, videos: 17000 },
+            { year: 2025, quarter: "Q2", month: "Jun", group: "Starhits", cms: "StarHits", target: 400000000, revenue: 135000000, views: 29000000, videos: 1150 },
+
+            { year: 2025, quarter: "Q3", month: "Jul", group: "Starhits", cms: "StarHits MCN", target: 9500000000, revenue: 3943030102, views: 122000000, videos: 16000 },
+            { year: 2025, quarter: "Q3", month: "Jul", group: "Starhits", cms: "StarHits", target: 450000000, revenue: 125000000, views: 26000000, videos: 1050 },
+
+            { year: 2025, quarter: "Q3", month: "Aug", group: "Starhits", cms: "StarHits MCN", target: 9500000000, revenue: 3902384421, views: 120000000, videos: 15800 },
+            { year: 2025, quarter: "Q3", month: "Aug", group: "Starhits", cms: "StarHits", target: 450000000, revenue: 122000000, views: 25000000, videos: 1000 },
+
+            { year: 2025, quarter: "Q3", month: "Sep", group: "Starhits", cms: "StarHits MCN", target: 9500000000, revenue: 4013854158, views: 125000000, videos: 16200 },
+            { year: 2025, quarter: "Q3", month: "Sep", group: "Starhits", cms: "StarHits", target: 450000000, revenue: 130000000, views: 27000000, videos: 1100 },
+
+            { year: 2025, quarter: "Q4", month: "Oct", group: "Starhits", cms: "StarHits MCN", target: 11500000000, revenue: 4053830102, views: 126000000, videos: 16800 },
+            { year: 2025, quarter: "Q4", month: "Oct", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 128000000, views: 27500000, videos: 1120 },
+
+            { year: 2025, quarter: "Q4", month: "Nov", group: "Starhits", cms: "StarHits MCN", target: 11500000000, revenue: 5021221365, views: 151000000, videos: 20500 },
+            { year: 2025, quarter: "Q4", month: "Nov", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 155000000, views: 33000000, videos: 1350 },
+
+            { year: 2025, quarter: "Q4", month: "Dec", group: "Starhits", cms: "StarHits MCN", target: 11113133355, revenue: 5028512355, views: 153000000, videos: 20700 },
+            { year: 2025, quarter: "Q4", month: "Dec", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 158000000, views: 34000000, videos: 1400 },
+
+            // ================= 2026 DATA (YTD June) =================
+            // --- 3 FTA Group ---
+            { year: 2026, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 902885104, views: 250000000, videos: 3200 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 834210931, views: 220000000, videos: 3000 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 502885104, views: 160000000, videos: 2300 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 588908845, views: 155000000, videos: 2400 },
+
+            { year: 2026, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 1593887208, views: 420000000, videos: 5100 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 732810931, views: 200000000, videos: 2800 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 512885104, views: 165000000, videos: 2400 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 507560573, views: 145000000, videos: 2200 },
+
+            { year: 2026, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 1593887208, views: 410000000, videos: 4900 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 732810931, views: 195000000, videos: 2700 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 512885104, views: 160000000, videos: 2350 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 505145842, views: 140000000, videos: 2150 },
+
+            { year: 2026, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "RCTI Indonesia", target: 500000000, revenue: 1990890157, views: 550000000, videos: 6200 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 600000000, revenue: 900570322, views: 260000000, videos: 3600 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 500000000, revenue: 505145842, views: 170000000, videos: 2500 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "3 FTA", cms: "PT MNC Televisi Network", target: 400000000, revenue: 512885104, views: 150000000, videos: 2300 },
+
+            { year: 2026, quarter: "Q2", month: "May", group: "3 FTA", cms: "RCTI Indonesia", target: 500000000, revenue: 1990890157, views: 540000000, videos: 6100 },
+            { year: 2026, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 600000000, revenue: 900570322, views: 250000000, videos: 3500 },
+            { year: 2026, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 500000000, revenue: 505145842, views: 165000000, videos: 2450 },
+            { year: 2026, quarter: "Q2", month: "May", group: "3 FTA", cms: "PT MNC Televisi Network", target: 400000000, revenue: 512885104, views: 148000000, videos: 2250 },
+
+            { year: 2026, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "RCTI Indonesia", target: 450000000, revenue: 1251394578, views: 350000000, videos: 4000 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT Cipta Televisi Pendidikan Indonesia", target: 500000000, revenue: 844812828, views: 240000000, videos: 3400 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT Global Informasi Bermutu", target: 400000000, revenue: 418146752, views: 130000000, videos: 2000 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "3 FTA", cms: "PT MNC Televisi Network", target: 350000000, revenue: 412885104, views: 125000000, videos: 1950 },
+
+            // --- IMG Group (2026 YTD) ---
+            { year: 2026, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 17541600881, views: 1050000000, videos: 13000 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 818020830, views: 50000000, videos: 700 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 1205250100, views: 320000000, videos: 3300 },
+
+            { year: 2026, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 17541600881, views: 1020000000, videos: 12800 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 761787283, views: 48000000, videos: 650 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 1205250100, views: 310000000, videos: 3200 },
+
+            { year: 2026, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 17541600881, views: 1080000000, videos: 13200 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 100000000, revenue: 791787283, views: 51000000, videos: 680 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 1205250100, views: 330000000, videos: 3400 },
+
+            { year: 2026, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 250000000, revenue: 11136528917, views: 720000000, videos: 9500 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 745170277, views: 42000000, videos: 600 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 130000000, views: 25000000, videos: 1000 },
+
+            { year: 2026, quarter: "Q2", month: "May", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 250000000, revenue: 11136528917, views: 710000000, videos: 9300 },
+            { year: 2026, quarter: "Q2", month: "May", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 745170277, views: 41000000, videos: 580 },
+            { year: 2026, quarter: "Q2", month: "May", group: "IMG Group", cms: "StarHits", target: 450000000, revenue: 130000000, views: 24000000, videos: 980 },
+
+            { year: 2026, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "PT Suara Mas Abadi", target: 200000000, revenue: 11136528917, views: 740000000, videos: 9800 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "PT Star Cipta Musikindo", target: 80000000, revenue: 745170277, views: 44000000, videos: 620 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "IMG Group", cms: "StarHits", target: 400000000, revenue: 130000000, views: 26000000, videos: 1020 },
+
+            // --- Starhits Group (2026 YTD) ---
+            { year: 2026, quarter: "Q1", month: "Jan", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4098512584, views: 125000000, videos: 16500 },
+            { year: 2026, quarter: "Q1", month: "Jan", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 130000000, views: 25000000, videos: 1100 },
+
+            { year: 2026, quarter: "Q1", month: "Feb", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4098512584, views: 122000000, videos: 16200 },
+            { year: 2026, quarter: "Q1", month: "Feb", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 128000000, views: 24000000, videos: 1050 },
+
+            { year: 2026, quarter: "Q1", month: "Mar", group: "Starhits", cms: "StarHits MCN", target: 11000000000, revenue: 4098512584, views: 128000000, videos: 16800 },
+            { year: 2026, quarter: "Q1", month: "Mar", group: "Starhits", cms: "StarHits", target: 500000000, revenue: 135000000, views: 26500000, videos: 1150 },
+
+            { year: 2026, quarter: "Q2", month: "Apr", group: "Starhits", cms: "StarHits MCN", target: 9500000000, revenue: 3075074572, views: 100000000, videos: 13500 },
+            { year: 2026, quarter: "Q2", month: "Apr", group: "Starhits", cms: "StarHits", target: 450000000, revenue: 110000000, views: 21000000, videos: 900 },
+
+            { year: 2026, quarter: "Q2", month: "May", group: "Starhits", cms: "StarHits MCN", target: 9500000000, revenue: 3075074572, views: 98000000, videos: 13200 },
+            { year: 2026, quarter: "Q2", month: "May", group: "Starhits", cms: "StarHits", target: 450000000, revenue: 108000000, views: 20000000, videos: 880 },
+
+            { year: 2026, quarter: "Q2", month: "Jun", group: "Starhits", cms: "StarHits MCN", target: 9000000000, revenue: 4443767217, views: 132000000, videos: 17200 },
+            { year: 2026, quarter: "Q2", month: "Jun", group: "Starhits", cms: "StarHits", target: 400000000, revenue: 125000000, views: 24000000, videos: 1000 }
+        ];
+
+        // Active State Filter Configuration
+        let filters = {
+            year: 'all',
+            quarter: 'all',
+            month: 'all',
+            group: 'all',
+            cms: 'all'
+        };
+
+        // Charts Global Pointers
+        let chartComboInstance = null;
+        let chartBarVerticalInstance = null;
+        let chartDonutInstance = null;
+        let chartBarHorizontalInstance = null;
+
+        // On document ready, boot the engine
+        window.onload = function() {
+            renderDashboard();
+        }
+
+        // Apply selected filter to state and trigger update
+        function setFilter(type, value) {
+            filters[type] = value;
+
+            // Handle cascading restrictions (e.g. Month availability based on year selection)
+            // 2026 is Year-To-Date (Jan to June), so Jul-Dec don't have data
+            if (filters.year === 2026) {
+                const lateMonths = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (type === 'month' && lateMonths.includes(value)) {
+                    // prevent selecting empty month ranges
+                    filters.month = 'all';
+                }
+            }
+
+            // Sync visual buttons of the Navigation Pane
+            updateFilterButtonsUI();
+
+            // Refresh Dashboard Content
+            renderDashboard();
+        }
+
+        // Reset Filter State to Defaults
+        function resetAllFilters() {
+            filters = {
+                year: 'all',
+                quarter: 'all',
+                month: 'all',
+                group: 'all',
+                cms: 'all'
+            };
+            updateFilterButtonsUI();
+            renderDashboard();
+        }
+
+        // Manage Sidebar styling classes based on filters state
+        function updateFilterButtonsUI() {
+            // Helper function to toggle classes
+            const toggleBtn = (id, isActive) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    if (isActive) {
+                        btn.classList.add('active-filter');
+                    } else {
+                        btn.classList.remove('active-filter');
+                    }
+                }
+            };
+
+            // Reset/Set Years UI
+            toggleBtn('btn-year-all', filters.year === 'all');
+            toggleBtn('btn-year-2025', filters.year === 2025);
+            toggleBtn('btn-year-2026', filters.year === 2026);
+
+            // Handle disabling late months if Year 2026 selected
+            const lateMonths = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            lateMonths.forEach(m => {
+                const mBtn = document.getElementById(`btn-m-${m}`);
+                if (mBtn) {
+                    if (filters.year === 2026) {
+                        mBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                        mBtn.title = "Data tahun 2026 hanya tersedia sampai bulan Juni";
+                    } else {
+                        mBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                        mBtn.title = "";
+                    }
+                }
+            });
+
+            // Reset/Set Quarters UI
+            ['all', 'Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
+                toggleBtn(`btn-q-${q}`, filters.quarter === q);
+            });
+
+            // Reset/Set Months UI
+            ['all', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].forEach(m => {
+                toggleBtn(`btn-m-${m}`, filters.month === m);
+            });
+
+            // Reset/Set Group Channels UI
+            ['all', '3 FTA', 'IMG Group', 'Starhits'].forEach(g => {
+                toggleBtn(`btn-group-${g}`, filters.group === g);
+            });
+
+            // Reset/Set CMS UI
+            const cmsMap = {
+                'all': 'btn-cms-all',
+                'RCTI Indonesia': 'btn-cms-RCTI',
+                'StarHits': 'btn-cms-StarHits',
+                'StarHits MCN': 'btn-cms-StarHitsMCN',
+                'PT Suara Mas Abadi': 'btn-cms-SuaraMas',
+                'PT Cipta Televisi Pendidikan Indonesia': 'btn-cms-MNCTV',
+                'PT Global Informasi Bermutu': 'btn-cms-GTV',
+                'PT MNC Televisi Network': 'btn-cms-iNews',
+                'PT Star Cipta Musikindo': 'btn-cms-StarCipta'
+            };
+            Object.keys(cmsMap).forEach(key => {
+                toggleBtn(cmsMap[key], filters.cms === key);
+            });
+        }
+
+        // Primary dashboard engine
+        function renderDashboard() {
+            // 1. FILTERING DATA
+            let filteredData = RAW_DATA.filter(item => {
+                if (filters.year !== 'all' && item.year !== filters.year) return false;
+                if (filters.quarter !== 'all' && item.quarter !== filters.quarter) return false;
+                if (filters.month !== 'all' && item.month !== filters.month) return false;
+                if (filters.group !== 'all' && item.group !== filters.group) return false;
+                if (filters.cms !== 'all' && item.cms !== filters.cms) return false;
+                return true;
+            });
+
+            // 2. RE-CALCULATING METRICS (KPIs)
+            let totalRevenue = 0;
+            let totalTarget = 0;
+            let totalViews = 0;
+            let totalVideos = 0;
+
+            filteredData.forEach(item => {
+                totalRevenue += item.revenue;
+                totalTarget += item.target;
+                totalViews += item.views;
+                totalVideos += item.videos;
+            });
+
+            let overallAchievement = totalTarget > 0 ? (totalRevenue / totalTarget) * 100 : 0;
+
+            // 3. UPDATING KPI CARDS WITH MODERN INDONESIAN CURRENCY SYMBOLS
+            document.getElementById('kpi-revenue').innerText = formatIDRCurrency(totalRevenue);
+            document.getElementById('kpi-views').innerText = formatCompactNumber(totalViews);
+            document.getElementById('kpi-videos').innerText = totalVideos.toLocaleString('id-ID');
+            document.getElementById('kpi-achievement').innerText = overallAchievement.toFixed(1) + '%';
+
+            // Custom Dynamic Achievement Badge coloring
+            const achBadge = document.getElementById('achievement-badge');
+            if (overallAchievement >= 100) {
+                achBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold flex items-center";
+                achBadge.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Melampaui Target`;
+            } else if (overallAchievement >= 75) {
+                achBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-bold flex items-center";
+                achBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Mendekati Target`;
+            } else {
+                achBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold flex items-center";
+                achBadge.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i> Di Bawah Target`;
+            }
+
+            // 4. GENERATING GRAPHS & TABULAR BREAKDOWN
+            renderComboChart(filteredData);
+            renderVerticalBarChart(filteredData);
+            renderDonutChart(filteredData);
+            renderHorizontalBarChart(filteredData);
+            populateBreakdownTable(filteredData);
+        }
+
+        // Formatting Helpers
+        function formatIDRCurrency(val) {
+            if (val >= 1e12) {
+                return 'Rp ' + (val / 1e12).toFixed(2) + ' Triliun';
+            } else if (val >= 1e9) {
+                return 'Rp ' + (val / 1e9).toFixed(2) + ' Miliar';
+            } else if (val >= 1e6) {
+                return 'Rp ' + (val / 1e6).toFixed(2) + ' Juta';
+            }
+            return 'Rp ' + val.toLocaleString('id-ID');
+        }
+
+        function formatCompactNumber(val) {
+            if (val >= 1e9) {
+                return (val / 1e9).toFixed(2) + ' B'; // Billion
+            } else if (val >= 1e6) {
+                return (val / 1e6).toFixed(2) + ' M'; // Million
+            }
+            return val.toLocaleString('id-ID');
+        }
+
+        // ================= GRAPH 1: TREND COMBO CHART =================
+        function renderComboChart(data) {
+            // Aggregate revenue & views by Month Chronologically
+            const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            
+            // Collect months in order
+            let monthlyAgg = {};
+            monthsOrder.forEach(m => {
+                monthlyAgg[m] = { revenue: 0, views: 0, count: 0 };
+            });
+
+            data.forEach(item => {
+                monthlyAgg[item.month].revenue += item.revenue;
+                monthlyAgg[item.month].views += item.views;
+                monthlyAgg[item.month].count++;
+            });
+
+            // Filter out months with no data representation to keep chart clean
+            let labels = [];
+            let revenueDataset = [];
+            let viewsDataset = [];
+
+            monthsOrder.forEach(m => {
+                if (monthlyAgg[m].count > 0) {
+                    labels.push(m);
+                    revenueDataset.push(monthlyAgg[m].revenue);
+                    viewsDataset.push(monthlyAgg[m].views);
+                }
+            });
+
+            if (chartComboInstance) {
+                chartComboInstance.destroy();
+            }
+
+            const ctx = document.getElementById('chartCombo').getContext('2d');
+            chartComboInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sum of Estimated Revenue (Rp)',
+                            type: 'line',
+                            data: revenueDataset,
+                            borderColor: '#D36B46', // Terracotta
+                            borderWidth: 3.5,
+                            pointBackgroundColor: '#F8F4EC',
+                            pointBorderColor: '#D36B46',
+                            pointHoverRadius: 7,
+                            pointRadius: 5,
+                            fill: true,
+                            backgroundColor: 'rgba(211, 107, 70, 0.08)',
+                            yAxisID: 'yRevenue',
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Sum of Engaged Views',
+                            type: 'bar',
+                            data: viewsDataset,
+                            backgroundColor: 'rgba(93, 112, 155, 0.25)', // Steel blue
+                            hoverBackgroundColor: 'rgba(93, 112, 155, 0.5)',
+                            borderColor: '#5D709B',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            yAxisID: 'yViews',
+                            barThickness: 24,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }, // Legend custom outside HTML
+                        tooltip: {
+                            backgroundColor: '#2E2525',
+                            padding: 12,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        label += formatIDRCurrency(context.raw);
+                                    } else {
+                                        label += formatCompactNumber(context.raw) + ' Views';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold', color: '#6E5743' } }
+                        },
+                        yRevenue: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Revenue (Rp)',
+                                font: { weight: 'bold', size: 11 }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value >= 1e9 ? 'Rp ' + (value / 1e9) + 'B' : value;
+                                }
+                            },
+                            grid: { color: '#FAF6F0' }
+                        },
+                        yViews: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Engaged Views',
+                                font: { weight: 'bold', size: 11 }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCompactNumber(value);
+                                }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= GRAPH 2: TARGET VS ACTUAL COLUMN CHART =================
+        function renderVerticalBarChart(data) {
+            // Aggregate Target and Actual Revenue per Group Channel
+            const groupChannels = ["3 FTA", "IMG Group", "Starhits"];
+            let targets = [0, 0, 0];
+            let actuals = [0, 0, 0];
+
+            data.forEach(item => {
+                let idx = groupChannels.indexOf(item.group);
+                if (idx !== -1) {
+                    targets[idx] += item.target;
+                    actuals[idx] += item.revenue;
+                }
+            });
+
+            if (chartBarVerticalInstance) {
+                chartBarVerticalInstance.destroy();
+            }
+
+            const ctx = document.getElementById('chartBarVertical').getContext('2d');
+            chartBarVerticalInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["3 FTA (RCTI, MNCTV, GTV)", "IMG Group", "Starhits Digital"],
+                    datasets: [
+                        {
+                            label: 'Target Revenue',
+                            data: targets,
+                            backgroundColor: '#E6DFD3', // Creamy grey
+                            borderRadius: 6,
+                            barThickness: 20
+                        },
+                        {
+                            label: 'Estimated Revenue (Aktual)',
+                            data: actuals,
+                            backgroundColor: '#D36B46', // Terracotta
+                            borderRadius: 6,
+                            barThickness: 20
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11, weight: '600' } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#2E2525',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatIDRCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + formatCompactNumber(value);
+                                }
+                            },
+                            grid: { color: '#FAF6F0' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= GRAPH 3: DONUT CHART (REVENUE DISTRIBUTION) =================
+        function renderDonutChart(data) {
+            const groupChannels = ["3 FTA", "IMG Group", "Starhits"];
+            let revenueByGroup = [0, 0, 0];
+
+            data.forEach(item => {
+                let idx = groupChannels.indexOf(item.group);
+                if (idx !== -1) {
+                    revenueByGroup[idx] += item.revenue;
+                }
+            });
+
+            let grandTotal = revenueByGroup.reduce((a, b) => a + b, 0);
+
+            if (chartDonutInstance) {
+                chartDonutInstance.destroy();
+            }
+
+            const ctx = document.getElementById('chartDonut').getContext('2d');
+            chartDonutInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: groupChannels,
+                    datasets: [{
+                        data: revenueByGroup,
+                        backgroundColor: ['#D36B46', '#BFA085', '#5D709B'], // Terracotta, Emas Hangat, Steel Blue
+                        borderWidth: 4,
+                        borderColor: '#FFFFFF',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }, // Render legend di HTML saja biar rapi
+                        tooltip: {
+                            backgroundColor: '#2E2525',
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.raw;
+                                    let pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) + '%' : '0%';
+                                    return context.label + ': ' + formatIDRCurrency(val) + ' (' + pct + ')';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Dynamically populate custom donut legend below graph
+            const donutLegendDiv = document.getElementById('donut-legends');
+            donutLegendDiv.innerHTML = '';
+            
+            const legendColors = ['#D36B46', '#BFA085', '#5D709B'];
+            groupChannels.forEach((grp, idx) => {
+                let rev = revenueByGroup[idx];
+                let pct = grandTotal > 0 ? ((rev / grandTotal) * 100).toFixed(1) : '0';
+                
+                donutLegendDiv.innerHTML += `
+                    <div class="flex flex-col items-center">
+                        <span class="flex items-center text-xs font-bold text-slate-600 mb-1">
+                            <span class="w-2.5 h-2.5 rounded-full mr-1.5" style="background-color: ${legendColors[idx]}"></span>
+                            ${grp}
+                        </span>
+                        <span class="text-xs font-extrabold text-[#4A3E3D]">${pct}%</span>
+                        <span class="text-[10px] text-slate-400 font-medium">${formatCompactNumber(rev)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // ================= GRAPH 4: HORIZONTAL CMS RANKINGS =================
+        function renderHorizontalBarChart(data) {
+            // Aggregate Estimated Revenue per CMS Entity
+            let cmsAgg = {};
+            data.forEach(item => {
+                if (!cmsAgg[item.cms]) {
+                    cmsAgg[item.cms] = 0;
+                }
+                cmsAgg[item.cms] += item.revenue;
+            });
+
+            // Sort CMS by highest performance
+            let cmsSorted = Object.keys(cmsAgg).map(key => {
+                return { name: key, revenue: cmsAgg[key] };
+            }).sort((a, b) => b.revenue - a.revenue);
+
+            // Cap to top 8 entities for clarity
+            let finalCMSList = cmsSorted.slice(0, 8);
+            let labels = finalCMSList.map(x => x.name);
+            let revenueData = finalCMSList.map(x => x.revenue);
+
+            if (chartBarHorizontalInstance) {
+                chartBarHorizontalInstance.destroy();
+            }
+
+            const ctx = document.getElementById('chartBarHorizontal').getContext('2d');
+            chartBarHorizontalInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estimated Revenue',
+                        data: revenueData,
+                        backgroundColor: '#BFA085', // Emas Hangat / Sand
+                        hoverBackgroundColor: '#A3856B',
+                        borderRadius: 4,
+                        barThickness: 15
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#2E2525',
+                            callbacks: {
+                                label: function(context) {
+                                    return formatIDRCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + formatCompactNumber(value);
+                                }
+                            },
+                            grid: { color: '#FAF6F0' }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 10, weight: '600' }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= SECTION 3: DETAILED TABLE POPULATION =================
+        function populateBreakdownTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            // Group by Year, Month, Group, and CMS to show structural breakdown
+            let sortedData = [...data].sort((a, b) => {
+                if (a.year !== b.year) return b.year - a.year; // Latest first
+                if (a.month !== b.month) return a.month.localeCompare(b.month);
+                return b.revenue - a.revenue;
+            });
+
+            document.getElementById('record-count').innerText = sortedData.length;
+
+            // Render limit to avoid UI lagging, paginated conceptually
+            let displayLimit = 15;
+            let displayedData = sortedData.slice(0, displayLimit);
+
+            if (displayedData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-slate-400 font-bold">
+                            <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
+                            Tidak ada data yang cocok dengan filter yang Anda tentukan.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            displayedData.forEach(item => {
+                let achievementPercent = item.target > 0 ? (item.revenue / item.target) * 100 : 100;
+                let achColorClass = "text-emerald-600 bg-emerald-50";
+                if (achievementPercent < 75) achColorClass = "text-rose-600 bg-rose-50";
+                else if (achievementPercent < 100) achColorClass = "text-amber-600 bg-amber-50";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-[#FAF8F5] transition-colors">
+                        <td class="py-3 px-4 font-extrabold text-[#4A3E3D]">${item.year} - ${item.month}</td>
+                        <td class="py-3 px-4 text-slate-600 font-semibold">${item.group}</td>
+                        <td class="py-3 px-4 text-slate-500 font-medium truncate max-w-[180px]" title="${item.cms}">${item.cms}</td>
+                        <td class="py-3 px-4 text-right font-medium text-slate-500">Rp ${item.target.toLocaleString('id-ID')}</td>
+                        <td class="py-3 px-4 text-right font-bold text-[#4A3E3D]">Rp ${item.revenue.toLocaleString('id-ID')}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold ${achColorClass}">
+                                ${achievementPercent.toFixed(1)}%
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right font-semibold text-indigo-900">${item.views.toLocaleString('id-ID')}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-slate-700">${item.videos.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+
+            // If clipped, show notice
+            if (sortedData.length > displayLimit) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td colspan="8" class="text-center py-3.5 text-xs text-slate-400 font-bold bg-[#FAF8F5]">
+                            Menampilkan 15 dari total ${sortedData.length} baris data terkonsolidasi. Saring filter untuk mempersempit pencarian.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
